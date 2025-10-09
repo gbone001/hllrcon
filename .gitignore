@@ -9,7 +9,6 @@ Thumbs.db
 *.dylib
 *.test
 *.out
-hllrcon
 /bin/
 
 # Vendor
