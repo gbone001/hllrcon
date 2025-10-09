@@ -1,7 +1,3 @@
-[build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
-
 [deploy]
 startCommand = "./hllrcon"
 restartPolicyType = "ON_FAILURE"
