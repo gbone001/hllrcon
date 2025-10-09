@@ -1,25 +1,31 @@
 # Build stage
 FROM golang:1.25.1-alpine AS builder
 
-WORKDIR /app
+# Install git for version info extraction
+RUN apk add --no-cache git
 
-# Build arguments for version info
-ARG VERSION=dev
-ARG GIT_COMMIT=unknown
-ARG BUILD_DATE=unknown
+WORKDIR /app
 
 # Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code
+# Copy source code and git metadata
 COPY . .
 
-# Build the application with version info
-RUN CGO_ENABLED=0 GOOS=linux go build \
-    -a -installsuffix cgo \
-    -ldflags "-X github.com/Sledro/hllrcon/cmd/hllrcon.Version=${VERSION} -X github.com/Sledro/hllrcon/cmd/hllrcon.GitCommit=${GIT_COMMIT} -X github.com/Sledro/hllrcon/cmd/hllrcon.BuildDate=${BUILD_DATE}" \
-    -o hllrcon ./cmd/hllrcon
+# Extract version info from git and build the application
+RUN set -ex && \
+    ls -la .git/ && \
+    GIT_COMMIT=$(git rev-parse --short HEAD 2>&1) && \
+    echo "GIT_COMMIT: ${GIT_COMMIT}" && \
+    VERSION=$(git describe --tags --exact-match 2>/dev/null || echo "${GIT_COMMIT}") && \
+    echo "VERSION: ${VERSION}" && \
+    BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") && \
+    echo "Building version: ${VERSION}, commit: ${GIT_COMMIT}, date: ${BUILD_DATE}" && \
+    CGO_ENABLED=0 GOOS=linux go build \
+        -a -installsuffix cgo \
+        -ldflags "-X main.Version=${VERSION} -X main.GitCommit=${GIT_COMMIT} -X main.BuildDate=${BUILD_DATE}" \
+        -o hllrcon ./cmd/hllrcon
 
 # Runtime stage
 FROM alpine:latest

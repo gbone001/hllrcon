@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -62,7 +64,3 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
-          build-args: |
-            VERSION=${{ github.ref_name }}
-            GIT_COMMIT=${{ github.sha }}
-            BUILD_DATE=${{ github.event.head_commit.timestamp }}
