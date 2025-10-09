@@ -1,6 +1,6 @@
 # HLLRCON
 
-## A lightweight modern web interface and REST API wrapper for Hell Let Loose RCON protocol.
+### A lightweight modern web interface and REST API wrapper for Hell Let Loose RCON protocol.
 
 This project can be used in place of the official RCON client which only runs on Windows and has limitations. Developers can use this tool to inspect RCON commands and their responses. Third party tools can choose to leverage this REST API in place of the official RCON TCP protocl.
 
