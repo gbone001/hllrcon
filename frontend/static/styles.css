@@ -38,7 +38,7 @@ body.dark-theme {
   --text-primary: #eeeeee;
   --text-secondary: #eeeeee;
   --text-tertiary: #d4d4d4;
-  --text-muted: #adadad;
+  --text-muted: #666666;
   --text-disabled: #d4d4d4;
   --border-color: #343b43;
   --input-bg: #2d343c;
@@ -138,6 +138,9 @@ h3 {
   gap: 4px;
   position: relative;
   box-sizing: border-box;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
 }
 
 .privacy-badge::after {
@@ -374,21 +377,28 @@ button.small {
 }
 
 .copy-button {
-  background: #2ecc71;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-disabled);
   padding: 6px 12px;
   font-size: 12px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   border-radius: 6px;
+  font-weight: 600;
 }
 
 .copy-button:hover {
-  background: #27ae60;
+  background: var(--command-header-hover);
+  color: var(--text-primary);
+  border-color: var(--input-border);
 }
 
 .copy-button.copied {
-  background: #3498db;
+  background: var(--button-bg);
+  color: white;
+  border-color: var(--button-bg);
 }
 
 .connection-badge {
@@ -726,74 +736,352 @@ button:disabled {
   cursor: not-allowed;
 }
 
-@media (max-width: 768px) {
+/* Tablet adjustments */
+@media (max-width: 1024px) {
   .header-wrapper {
-    flex-direction: column;
     gap: 15px;
   }
-  .header-center {
-    order: 2;
-  }
-  .header-right {
-    order: 3;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
+
+  .commands-header,
+  .response-header {
+    flex-wrap: wrap;
     gap: 10px;
+  }
+
+  .header-actions {
     flex-wrap: wrap;
   }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  body {
+    padding: 8px;
+  }
+
+  .card {
+    padding: 15px;
+    margin-bottom: 8px;
+  }
+
+  .card:first-child {
+    padding: 18px 15px;
+  }
+
+  .header-wrapper {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .header-left {
+    flex-basis: 100%;
+    width: 100%;
+    order: 1;
+  }
+
+  .header-center {
+    order: 2;
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+
+  .header-right {
+    order: 3;
+    flex: 0 1 auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
   .header-menu {
     padding: 2px;
+    flex: 0 0 auto;
   }
-  h1 {
-    font-size: 1.3em;
-  }
-  .subtitle {
+
+  .rcon-spec-button {
     font-size: 12px;
+    padding: 6px 10px;
   }
+
+  h1 {
+    font-size: 1.2em;
+    line-height: 1.3;
+  }
+
+  h2 {
+    font-size: 1.1em;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .github-link {
+    font-size: 14px;
+  }
+
+  .connection-bar {
+    padding: 12px 15px;
+  }
+
+  .connect-form {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .connect-form .form-group {
+    margin-bottom: 0;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .connect-button {
+    padding: 10px;
+  }
+
+  .commands-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: auto;
+  }
+
+  .response-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    min-height: auto;
+  }
+
+  .commands-header h2,
+  .response-header h2 {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  #commandsConnectionStatus {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .connection-badge {
+    font-size: 10px;
+    padding: 4px 8px;
+    white-space: normal;
+    word-break: break-all;
+    line-height: 1.2;
+  }
+
+  .disconnect-button {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  #commandsConnectionStatus {
+    gap: 6px;
+  }
+
   .privacy-badge {
+    font-size: 10px;
+    padding: 5px 8px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+  }
+
+  .privacy-badge::after {
+    width: 240px;
+    font-size: 10px;
+  }
+
+  .copy-button {
+    padding: 5px 8px;
+    font-size: 10px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .status {
     font-size: 11px;
     padding: 6px 10px;
   }
-  .privacy-note {
-    font-size: 10px;
-  }
-  .card {
-    padding: 20px;
-  }
-  .connection-bar {
-    padding: 12px 20px 15px 20px;
-  }
-  body {
-    padding: 10px;
-  }
-  .connect-form {
-    grid-template-columns: 1fr;
-  }
-  .connect-form .form-group {
-    margin-bottom: 10px;
-  }
-  .connect-form .form-group:last-child {
-    margin-bottom: 0;
-  }
-  .status {
-    font-size: 12px;
-    padding: 6px 12px;
-  }
+
   .grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
     max-height: none;
     height: auto;
+    min-height: auto;
   }
+
   .grid > .card {
-    height: 60vh;
+    height: 50vh;
+    min-height: 300px;
+    max-height: none;
   }
+
+  .commands-list,
+  .response {
+    min-height: 250px;
+  }
+
+  .command-item {
+    margin-bottom: 6px;
+  }
+
+  .command-header {
+    padding: 10px 12px;
+  }
+
+  .command-title {
+    font-size: 13px;
+  }
+
+  .command-method {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .command-body {
+    padding: 12px;
+  }
+
+  .command-section h3 {
+    font-size: 0.85em;
+  }
+
+  .command-button-wrapper {
+    margin-top: 12px;
+  }
+
+  label {
+    font-size: 12px;
+  }
+
+  .response {
+    padding: 12px;
+    font-size: 12px;
+  }
+
   .version-footer {
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 8px;
+    font-size: 9px;
+    padding: 8px 0 0 0;
+    flex-wrap: wrap;
+  }
+
+  .footer-left {
+    flex: 1 1 auto;
+    min-width: max-content;
+  }
+
+  .footer-right {
+    flex: 0 1 auto;
+    gap: 6px;
+    justify-content: flex-end;
+  }
+}
+
+/* Small mobile adjustments */
+@media (max-width: 480px) {
+  body {
+    padding: 6px;
+  }
+
+  .card {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .card:first-child {
+    padding: 15px 12px;
+  }
+
+  h1 {
+    font-size: 1.1em;
+  }
+
+  h2 {
+    font-size: 1em;
+  }
+
+  .subtitle {
     font-size: 10px;
   }
-  .footer-right {
-    gap: 6px;
+
+  .github-link {
+    font-size: 13px;
+  }
+
+  .github-link svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .connection-bar {
+    padding: 10px 12px;
+  }
+
+  input,
+  select,
+  textarea {
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .grid > .card {
+    height: 45vh;
+    min-height: 280px;
+  }
+
+  .command-header {
+    padding: 8px 10px;
+  }
+
+  .command-title {
+    font-size: 12px;
+  }
+
+  .command-body {
+    padding: 10px;
+  }
+
+  .response {
+    padding: 10px;
+    font-size: 11px;
+  }
+
+  .version-footer {
+    font-size: 9px;
+  }
+
+  .footer-link {
+    font-size: 9px;
   }
 }
