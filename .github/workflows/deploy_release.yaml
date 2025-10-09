@@ -66,9 +66,12 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
-      - name: Deploy Docker Image to Railway
-        run: |
-          railway variables set IMAGE_TAG=${{ github.event.release.tag_name }}
-          railway service update --image ghcr.io/${{ github.repository }}:${{ github.event.release.tag_name }}
+      - name: Update Image Tag Variable
+        run: railway variables --service hllrcon --set "IMAGE_TAG=${{ github.event.release.tag_name }}"
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Redeploy with New Image
+        run: railway redeploy --service hllrcon --yes
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
