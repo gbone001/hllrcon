@@ -1,0 +1,26 @@
+[server] 
+# HTTP Web UI Server Settings
+host = "0.0.0.0"  # Bind to all interfaces (use 127.0.0.1 for localhost only)
+port = "8080"     # HTTP port
+
+[log]
+# Logging Configuration
+level = "info"    # debug, info, warn, error
+format = "text"   # text or json
+
+[session]
+# Session Management
+timeout_minutes = 30     # Session timeout in minutes
+secure_cookie = false    # Set to true if running behind HTTPS (recommended for production)
+
+[security]
+# Security Settings
+enable_cors = false                # Enable CORS (set to true if needed)
+allowed_origins = ["http://localhost:8080", "http://127.0.0.1:8080", "https://hllrcon.com"]
+enable_security_headers = true     # Enable security headers (recommended)
+
+[rcon]
+# RCON Protocol Settings
+dial_timeout_seconds = 10          # Connection timeout to RCON server
+max_request_size = 1048576         # Max request size: 1MB
+max_response_size = 10485760       # Max response size: 10MB

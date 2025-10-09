@@ -1,0 +1,35 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Go binaries
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+hllrcon
+/bin/
+
+# Vendor
+/vendor/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/

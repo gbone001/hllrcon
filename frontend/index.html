@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HLL RCON V2 Web Tool</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+  </head>
+  <body class="dark-theme">
+    <div class="container">
+      <div class="card">
+        <div class="header-wrapper">
+          <div class="header-left">
+            <h1>🎮 Hell Let Loose RCON V2 Web Tool</h1>
+            <p class="subtitle">
+              All 52 RCON V2 Commands (Update 18) 8th October 2025
+            </p>
+          </div>
+          <div class="header-center">
+            <div class="header-menu">
+              <a
+                href="/static/Hell Let Loose - Rcon V2-1.pdf"
+                target="_blank"
+                class="rcon-spec-button"
+                title="View RCON V2 Specification"
+              >
+                Specification
+              </a>
+            </div>
+            <div class="header-menu">
+              <button
+                id="themeToggle"
+                class="theme-toggle"
+                onclick="toggleTheme()"
+                title="Toggle theme"
+              >
+                <svg
+                  id="sunIcon"
+                  class="hidden"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+                <svg
+                  id="moonIcon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="header-right">
+            <a
+              id="githubLink"
+              href="https://github.com/Sledro/hllrcon"
+              target="_blank"
+              class="github-link"
+              title="View on GitHub"
+            >
+              <svg
+                height="24"
+                width="24"
+                viewBox="0 0 16 16"
+                fill="currentColor"
+              >
+                <path
+                  d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+                />
+              </svg>
+              GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection Bar (Always visible) -->
+      <div class="card connection-bar">
+        <!-- Connection Form (Hidden when connected) -->
+        <div id="connectForm">
+          <div class="connect-form">
+            <div class="form-group">
+              <input type="text" id="host" placeholder="RCON Host" />
+            </div>
+            <div class="form-group">
+              <input type="number" id="port" placeholder="RCON Port" />
+            </div>
+            <div class="form-group">
+              <input
+                type="password"
+                id="password"
+                placeholder="RCON Password"
+              />
+            </div>
+            <div class="form-group">
+              <button onclick="connect()" class="connect-button">
+                Connect
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Interface (Always visible) -->
+      <div id="interfaceCard">
+        <div class="grid">
+          <!-- Left: Commands -->
+          <div class="card">
+            <div class="commands-header">
+              <h2>Commands</h2>
+              <div id="commandsConnectionStatus"></div>
+            </div>
+            <div class="commands-list" id="commandsList"></div>
+          </div>
+
+          <!-- Right: Response -->
+          <div class="card">
+            <div class="response-header">
+              <h2>Response</h2>
+              <div class="header-actions">
+                <span
+                  class="privacy-badge"
+                  title="No logs, credentials, or commands are stored by this tool for your privacy"
+                >
+                  🔒 Privacy First
+                </span>
+                <button
+                  class="copy-button small"
+                  onclick="copyResponse()"
+                  id="copyBtn"
+                >
+                  📋 Copy Response
+                </button>
+              </div>
+            </div>
+            <div id="response" class="response">No command executed yet</div>
+            <div class="version-footer">
+              <div class="footer-left">
+                Made with ❤️ by
+                <a
+                  href="https://discord.com/users/392644735355060225"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >SLAPPY</a
+                >
+              </div>
+              <div class="footer-right">
+                <a
+                  href="https://hllrcon.com"
+                  target="_blank"
+                  class="footer-link"
+                  >hllrcon.com</a
+                >
+                <span class="footer-separator">•</span>
+                <a
+                  id="appVersion"
+                  href="https://github.com/Sledro/hllrcon"
+                  target="_blank"
+                  class="footer-link"
+                  >v0.0.0</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

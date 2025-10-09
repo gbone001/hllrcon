@@ -1,0 +1,16 @@
+# Files to ignore during Railway deployment
+
+# Development files
+*.md
+!README.md
+
+# Documentation
+docs/
+
+# Git
+.git
+.gitignore
+
+# Docker files (not needed when deploying)
+docker-compose.yml
+.dockerignore

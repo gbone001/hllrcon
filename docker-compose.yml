@@ -1,0 +1,8 @@
+# HLL RCON Web UI
+# Run: docker compose up
+services:
+  hllrcon:
+    build: .
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

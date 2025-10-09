@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation (keep README.md)
+docs/
+SETUP.md
+QUICKSTART.md
+
+# Docker files
+docker-compose*.yml
+Dockerfile
+
+# Build artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
