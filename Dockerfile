@@ -1,26 +1,22 @@
 # Build stage
 FROM golang:1.25.1-alpine AS builder
 
-# Install git for version info extraction
-RUN apk add --no-cache git
-
 WORKDIR /app
 
 # Copy go mod files
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy source code and git metadata
+# Copy source code
 COPY . .
 
-# Extract version info from git and build the application
+# Accept build arguments for version information
+ARG VERSION=dev
+ARG GIT_COMMIT=unknown
+ARG BUILD_DATE=unknown
+
+# Build the application with version info
 RUN set -ex && \
-    ls -la .git/ && \
-    GIT_COMMIT=$(git rev-parse --short HEAD 2>&1) && \
-    echo "GIT_COMMIT: ${GIT_COMMIT}" && \
-    VERSION=$(git describe --tags --exact-match 2>/dev/null || echo "${GIT_COMMIT}") && \
-    echo "VERSION: ${VERSION}" && \
-    BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") && \
     echo "Building version: ${VERSION}, commit: ${GIT_COMMIT}, date: ${BUILD_DATE}" && \
     CGO_ENABLED=0 GOOS=linux go build \
         -a -installsuffix cgo \
