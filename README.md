@@ -4,7 +4,7 @@
 
 This project can be used in place of the official RCON client which only runs on Windows and has limitations. Developers can use this tool to inspect RCON commands and their responses. Third party tools can choose to leverage this REST API in place of the official RCON TCP protocl.
 
-![HLL RCON Web UI Preview](frontend/static/preview.png)
+![HLL RCON Web UI Preview](preview.png)
 
 ## 🚀 Quick Start
 
@@ -25,14 +25,14 @@ This application implements **RCON V2 (Update 18)** with full support for all 52
 - Admin and VIP management
 - Real-time server information
 
-For complete protocol documentation, see [Hell Let Loose - Rcon V2-1.pdf](frontend/static/Hell%20Let%20Loose%20-%20Rcon%20V2-1.pdf)
+For complete protocol documentation, see [Hell Let Loose - Rcon V2-1.pdf](frontend/assets/docs/Hell%20Let%20Loose%20-%20Rcon%20V2-1.pdf)
 
 ## Installation
 
 ### Docker (Recommended)
 
 ```bash
-git clone https://github.com/Sledro/hllrcon.git
+git clone https://github.com/sledro/hllrcon.git
 cd hllrcon
 docker compose up
 ```
@@ -48,7 +48,7 @@ docker run -p 8080:8080 ghcr.io/sledro/hllrcon:latest
 ### From Source (Requires Go 1.25.1+)
 
 ```bash
-git clone https://github.com/Sledro/hllrcon.git
+git clone https://github.com/sledro/hllrcon.git
 cd hllrcon
 go mod download
 go run ./cmd/hllrcon
@@ -116,4 +116,4 @@ Sessions are stored in memory only and automatically cleaned up.
 
 - 🌐 **Live Demo:** [https://hllrcon.com](https://hllrcon.com)
 - 📖 **API Docs:** See web UI for interactive docs
-- 🐛 **Issues:** [GitHub Issues](https://github.com/Sledro/hllrcon/issues)
+- 🐛 **Issues:** [GitHub Issues](https://github.com/sledro/hllrcon/issues)

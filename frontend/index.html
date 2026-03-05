@@ -4,8 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HLL RCON V2 Web Tool</title>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico" />
-    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="icon" type="image/x-icon" href="/assets/icons/favicon.ico" />
+    <link rel="stylesheet" href="/styles/main.css" />
+    <link rel="stylesheet" href="/styles/components/buttons.css" />
+    <link rel="stylesheet" href="/styles/components/commands.css" />
+    <link rel="stylesheet" href="/styles/components/connection.css" />
+    <link rel="stylesheet" href="/styles/components/response.css" />
+    <link rel="stylesheet" href="/styles/components/players.css" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css"
@@ -26,11 +31,27 @@
           <div class="header-center">
             <div class="header-menu">
               <a
-                href="/static/Hell Let Loose - Rcon V2-1.pdf"
+                href="/assets/docs/Hell Let Loose - Rcon V2-1.pdf"
                 target="_blank"
                 class="rcon-spec-button"
                 title="View RCON V2 Specification"
               >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"
+                  ></path>
+                  <polyline points="15 3 21 3 21 9"></polyline>
+                  <line x1="10" y1="14" x2="21" y2="3"></line>
+                </svg>
                 Specification
               </a>
             </div>
@@ -99,10 +120,10 @@
         </div>
       </div>
 
-      <!-- Connection Bar (Always visible) -->
-      <div class="card connection-bar">
-        <!-- Connection Form (Hidden when connected) -->
-        <div id="connectForm">
+      <!-- Connection Bar (Visible when disconnected) -->
+      <div class="card connection-bar" id="connectionBar">
+        <!-- Connection Form -->
+        <form id="connectForm">
           <div class="connect-form">
             <div class="form-group">
               <input type="text" id="host" placeholder="RCON Host" />
@@ -118,10 +139,56 @@
               />
             </div>
             <div class="form-group">
-              <button onclick="connect()" class="connect-button">
-                Connect
-              </button>
+              <button type="submit" class="connect-button">Connect</button>
             </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Menu Bar (Visible when connected) -->
+      <div class="card menu-bar" id="menuBar" style="display: none">
+        <div class="menu-bar-content">
+          <!-- Left side: Menu buttons -->
+          <div class="menu-left">
+            <button
+              class="menu-button active"
+              id="commandsMenuBtn"
+              onclick="showDefaultView()"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"
+                />
+              </svg>
+              Commands
+            </button>
+            <button
+              class="menu-button"
+              id="liveViewMenuBtn"
+              onclick="showPlayersPage()"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                />
+              </svg>
+              Live View
+            </button>
+          </div>
+
+          <!-- Right side: Connection status -->
+          <div class="menu-right">
+            <div id="menuConnectionStatus"></div>
           </div>
         </div>
       </div>
@@ -133,7 +200,25 @@
           <div class="card">
             <div class="commands-header">
               <h2>Commands</h2>
-              <div id="commandsConnectionStatus"></div>
+              <div class="header-actions">
+                <button
+                  id="devModeToggle"
+                  class="dev-mode-button"
+                  onclick="toggleDeveloperMode()"
+                  title="Toggle developer mode"
+                >
+                  🥷 Developer Mode
+                </button>
+              </div>
+            </div>
+            <div
+              class="dev-mode-notice"
+              id="devModeNotice"
+              style="display: none"
+            >
+              Developer mode is a 1:1 mapping of the RCON commands. Standard
+              mode is a more user-friendly interface for server admins. Report
+              and issues or bugs in on GitHub.
             </div>
             <div class="commands-list" id="commandsList"></div>
           </div>
@@ -191,6 +276,6 @@
       </div>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script type="module" src="/js/app.js"></script>
   </body>
 </html>

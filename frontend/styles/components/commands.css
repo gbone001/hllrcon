@@ -1,0 +1,270 @@
+/* Developer mode notice */
+.dev-mode-notice {
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  font-size: 0.82rem;
+  color: #ffffff;
+  background: rgba(255, 213, 0, 0.15);
+  border: 1px solid rgba(255, 213, 0, 0.3);
+  border-radius: 6px;
+}
+
+/* Command-related styles */
+.command-item {
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  transition: border-color 0.3s;
+  width: 100%;
+  max-width: 100%; /* Don't exceed container */
+  box-sizing: border-box;
+}
+
+.command-header {
+  padding: 12px 15px;
+  background: var(--command-header-bg);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.command-header:hover {
+  background: var(--command-header-hover);
+}
+
+.command-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0; /* Allow content to shrink */
+}
+
+.command-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  max-width: calc(100% - 80px); /* Reserve space for method badge */
+  overflow: hidden;
+}
+
+.command-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.command-description {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 300px; /* Limit description width */
+}
+
+.command-method {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-weight: 600;
+  flex-shrink: 0; /* Don't shrink method badge */
+  white-space: nowrap;
+}
+
+.method-get {
+  background: #27ae60;
+  color: white;
+}
+
+.method-post {
+  background: #3498db;
+  color: white;
+}
+
+.method-delete {
+  background: #e74c3c;
+  color: white;
+}
+
+.method-put {
+  background: #f39c12;
+  color: white;
+}
+
+.command-body {
+  padding: 15px;
+  background: var(--command-body-bg);
+  display: none;
+  transition: background 0.3s;
+}
+
+.command-body.expanded {
+  display: block;
+}
+
+.command-section {
+  margin-bottom: 20px;
+}
+
+.command-section h3 {
+  color: var(--button-bg);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid var(--button-bg);
+}
+
+.commands-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  padding-right: 10px;
+  width: 100%;
+  min-width: 0; /* Allow content to shrink */
+}
+
+.commands-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.commands-list::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+}
+
+.commands-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+
+.commands-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-shrink: 0;
+  min-height: 44px;
+  max-height: 44px; /* Fixed height to prevent expansion */
+  overflow: hidden; /* Prevent content overflow */
+  width: 100%;
+}
+
+.commands-header h2 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-actions,
+#commandsConnectionStatus {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Mobile adjustments for commands */
+@media (max-width: 1024px) {
+  .commands-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .commands-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: auto;
+  }
+
+  .commands-header h2 {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  #commandsConnectionStatus {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  #commandsConnectionStatus {
+    gap: 6px;
+  }
+
+  .command-item {
+    margin-bottom: 6px;
+  }
+
+  .command-header {
+    padding: 10px 12px;
+  }
+
+  .command-title-wrapper {
+    gap: 6px;
+  }
+
+  .command-title {
+    font-size: 13px;
+  }
+
+  .command-description {
+    font-size: 11px;
+  }
+
+  .command-method {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+
+  .command-body {
+    padding: 12px;
+  }
+
+  .command-section h3 {
+    font-size: 0.85em;
+  }
+}
+
+@media (max-width: 480px) {
+  .command-header {
+    padding: 8px 10px;
+  }
+
+  .command-title-wrapper {
+    gap: 5px;
+  }
+
+  .command-title {
+    font-size: 12px;
+  }
+
+  .command-description {
+    font-size: 10px;
+  }
+
+  .command-body {
+    padding: 10px;
+  }
+}
