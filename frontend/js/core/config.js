@@ -1441,6 +1441,7 @@ export const APP_CONFIG = {
     API_BASE_URL: '/api/v2',
     STORAGE_KEYS: {
         THEME: 'theme',
-        DEVELOPER_MODE: 'developerMode'
+        DEVELOPER_MODE: 'developerMode',
+        RECENT_SERVERS: 'recentServers'
     }
 };

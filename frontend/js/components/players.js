@@ -7,6 +7,9 @@ import { FormattingUtils } from '../utils/formatting.js';
 
 export class PlayersComponent {
     static currentPlayers = [];
+    static refreshInterval = null;
+    static timerInterval = null;
+    static lastRemainingTime = null;
 
     // Render the players page
     static renderPlayersPage() {
@@ -15,6 +18,7 @@ export class PlayersComponent {
 
         // Update menu button states
         this.setActiveMenuButton('liveViewMenuBtn');
+        this.startRefresh();
 
         // Use full width layout for players view (same width as menu bar)
         interfaceCard.innerHTML = `
@@ -89,8 +93,10 @@ export class PlayersComponent {
         if (!content) return;
 
         try {
-            // Show loading
-            content.innerHTML = '<div class="loading-message">Loading players...</div>';
+            // Only show loading on first render
+            if (!content.querySelector('.players-table')) {
+                content.innerHTML = '<div class="loading-message">Loading players...</div>';
+            }
 
             // Get players data
             const result = await ApiService.executeCommand({
@@ -138,6 +144,10 @@ export class PlayersComponent {
             return;
         }
 
+        const avgLevel = players.length > 0
+            ? Math.round(players.reduce((sum, p) => sum + (p.level || 0), 0) / players.length)
+            : 0;
+
         let html = `
             <div class="players-stats">
                 <div class="stats-grid">
@@ -154,7 +164,7 @@ export class PlayersComponent {
                         <span class="stat-label">Allies Team</span>
                     </div>
                     <div class="stat-box">
-                        <span class="stat-number">${Math.round(players.reduce((sum, p) => sum + p.level, 0) / players.length)}</span>
+                        <span class="stat-number">${avgLevel}</span>
                         <span class="stat-label">Avg Level</span>
                     </div>
                 </div>
@@ -184,13 +194,16 @@ export class PlayersComponent {
         });
 
         sortedPlayers.forEach((player, index) => {
+            const kills = player.kills || 0;
+            const deaths = player.deaths || 0;
+            const level = player.level || 0;
             const team = player.team === 0 ? 'Axis' : player.team === 1 ? 'Allies' : 'Spec';
             const teamClass = player.team === 0 ? 'axis' : player.team === 1 ? 'allies' : 'spectator';
             const roleName = this.getRoleName(player.role);
-            const kdr = player.deaths > 0 ? (player.kills / player.deaths).toFixed(2) : player.kills.toString();
+            const kdr = deaths > 0 ? (kills / deaths).toFixed(2) : kills.toString();
 
             html += `
-                <tr class="player-row" onclick="togglePlayerDetails('player-${index}')">
+                <tr class="player-row">
                     <td class="col-name">
                         <div class="player-name-cell">
                             <span class="player-name">${this.escapeHTML(player.name)}</span>
@@ -201,10 +214,10 @@ export class PlayersComponent {
                         <span class="team-badge ${teamClass}">${team}</span>
                     </td>
                     <td class="col-level">
-                        <span class="level-display" data-level="${this.getLevelCategory(player.level)}">${player.level}</span>
+                        <span class="level-display" data-level="${this.getLevelCategory(level)}">${level}</span>
                     </td>
                     <td class="col-kd">
-                        <span class="kd-display">${player.kills}/${player.deaths}</span>
+                        <span class="kd-display">${kills}/${deaths}</span>
                         <span class="kdr-display" data-kdr="${this.getKDRCategory(kdr)}">${kdr}</span>
                     </td>
                     <td class="col-score">
@@ -221,22 +234,27 @@ export class PlayersComponent {
                     </td>
                     <td class="col-actions">
                         <div class="action-buttons">
-                            <button class="action-btn message-btn" onclick="messagePlayer('${player.iD}', '${this.escapeHTML(player.name)}'); event.stopPropagation();" title="Message Player">
+                            <button class="action-btn view-btn" onclick="togglePlayerDetails('player-${index}')" title="View Details">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                                </svg>
+                            </button>
+                            <button class="action-btn message-btn" onclick="messagePlayer('${player.iD}', '${this.escapeHTML(player.name)}')" title="Message Player">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
                                 </svg>
                             </button>
-                            <button class="action-btn punish-btn" onclick="punishPlayer('${player.iD}', '${this.escapeHTML(player.name)}'); event.stopPropagation();" title="Punish Player">
+                            <button class="action-btn punish-btn" onclick="punishPlayer('${player.iD}', '${this.escapeHTML(player.name)}')" title="Punish Player">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/>
                                 </svg>
                             </button>
-                            <button class="action-btn switch-btn" onclick="switchPlayerTeam('${player.iD}', '${this.escapeHTML(player.name)}'); event.stopPropagation();" title="Switch Team">
+                            <button class="action-btn switch-btn" onclick="switchPlayerTeam('${player.iD}', '${this.escapeHTML(player.name)}')" title="Switch Team">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
                                 </svg>
                             </button>
-                            <button class="action-btn kick-btn" onclick="kickPlayer('${player.iD}', '${this.escapeHTML(player.name)}'); event.stopPropagation();" title="Kick Player">
+                            <button class="action-btn kick-btn" onclick="kickPlayer('${player.iD}', '${this.escapeHTML(player.name)}')" title="Kick Player">
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
                                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                                 </svg>
@@ -258,7 +276,21 @@ export class PlayersComponent {
             </div>
         `;
 
+        // Save expanded detail rows before re-render
+        const expandedRows = new Set();
+        content.querySelectorAll('.player-details-row').forEach(row => {
+            if (row.style.display !== 'none') {
+                expandedRows.add(row.id);
+            }
+        });
+
         content.innerHTML = html;
+
+        // Restore expanded detail rows
+        expandedRows.forEach(id => {
+            const row = document.getElementById(id);
+            if (row) row.style.display = 'table-row';
+        });
 
         // Store players data for details panel
         this.currentPlayers = sortedPlayers;
@@ -273,7 +305,7 @@ export class PlayersComponent {
     // Get role name from role number
     static getRoleName(roleId) {
         const roles = {
-            0: 'Officer',
+            0: 'No Role',
             1: 'Rifleman',
             2: 'Assault',
             3: 'Automatic Rifleman',
@@ -282,11 +314,12 @@ export class PlayersComponent {
             6: 'Heavy MG',
             7: 'Anti-Tank',
             8: 'Engineer',
-            9: 'Tank Commander',
-            10: 'Tank Crewman',
-            11: 'Spotter',
-            12: 'Sniper',
-            13: 'Machine Gunner'
+            9: 'Officer',
+            10: 'Tank Commander',
+            11: 'Crewman',
+            12: 'Spotter',
+            13: 'Sniper',
+            14: 'Commander'
         };
         return roles[roleId] || `Role ${roleId}`;
     }
@@ -341,9 +374,13 @@ export class PlayersComponent {
         const detailsPanel = document.getElementById('playerDetails');
         if (!detailsPanel) return;
 
+        const kills = player.kills || 0;
+        const deaths = player.deaths || 0;
+        const level = player.level || 0;
         const roleName = this.getRoleName(player.role);
         const team = player.team === 0 ? 'Axis' : player.team === 1 ? 'Allies' : 'Spectator';
         const teamClass = player.team === 0 ? 'axis' : player.team === 1 ? 'allies' : 'spectator';
+        const detailKdr = deaths > 0 ? (kills / deaths).toFixed(2) : kills.toString();
 
         detailsPanel.innerHTML = `
             <div class="selected-player-details">
@@ -354,7 +391,7 @@ export class PlayersComponent {
                     </h3>
                     <div class="player-badges">
                         <span class="team-badge ${teamClass}">${team}</span>
-                        <span class="level-display" data-level="${this.getLevelCategory(player.level)}">Level ${player.level}</span>
+                        <span class="level-display" data-level="${this.getLevelCategory(level)}">Level ${level}</span>
                         <span class="role-display" data-role="${player.role}">${roleName}</span>
                     </div>
                 </div>
@@ -364,15 +401,15 @@ export class PlayersComponent {
                         <h4>Performance</h4>
                         <div class="stat-row">
                             <span class="stat-name">Kills:</span>
-                            <span class="stat-value">${player.kills}</span>
+                            <span class="stat-value">${kills}</span>
                         </div>
                         <div class="stat-row">
                             <span class="stat-name">Deaths:</span>
-                            <span class="stat-value">${player.deaths}</span>
+                            <span class="stat-value">${deaths}</span>
                         </div>
                         <div class="stat-row">
                             <span class="stat-name">K/D Ratio:</span>
-                            <span class="kdr-display" data-kdr="${this.getKDRCategory(player.deaths > 0 ? (player.kills / player.deaths).toFixed(2) : player.kills)}">${player.deaths > 0 ? (player.kills / player.deaths).toFixed(2) : player.kills}</span>
+                            <span class="kdr-display" data-kdr="${this.getKDRCategory(detailKdr)}">${detailKdr}</span>
                         </div>
                         <div class="stat-row">
                             <span class="stat-name">Total Score:</span>
@@ -435,18 +472,6 @@ export class PlayersComponent {
                                 <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                             </svg>
                             Kick Player
-                        </button>
-                        <button class="detail-action-btn punish-action" onclick="punishPlayer('${player.iD}', '${this.escapeHTML(player.name)}')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM7.07 18.28c.43-.9 3.05-1.78 4.93-1.78s4.51.88 4.93 1.78C15.57 19.36 13.86 20 12 20s-3.57-.64-4.93-1.72zm11.29-1.45c-1.43-1.74-4.9-2.33-6.36-2.33s-4.93.59-6.36 2.33C4.62 15.49 4 13.82 4 12c0-4.41 3.59-8 8-8s8 3.59 8 8c0 1.82-.62 3.49-1.64 4.83z"/>
-                            </svg>
-                            Punish Player
-                        </button>
-                        <button class="detail-action-btn switch-action" onclick="switchPlayerTeam('${player.iD}', '${this.escapeHTML(player.name)}')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
-                            </svg>
-                            Switch Team
                         </button>
                     </div>
                     
@@ -512,13 +537,6 @@ export class PlayersComponent {
                             <span class="detail-label">Coordinates:</span>
                             <span class="detail-value">X: ${player.worldPosition?.x || 0}, Y: ${player.worldPosition?.y || 0}, Z: ${player.worldPosition?.z || 0}</span>
                         </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Actions:</span>
-                            <div class="detail-actions">
-                                <button class="detail-action-btn" onclick="punishPlayer('${player.iD}', '${this.escapeHTML(player.name)}'); event.stopPropagation();">Punish</button>
-                                <button class="detail-action-btn" onclick="switchPlayerTeam('${player.iD}', '${this.escapeHTML(player.name)}'); event.stopPropagation();">Switch Team</button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -543,6 +561,11 @@ export class PlayersComponent {
 
     // Set active menu button state
     static setActiveMenuButton(activeButtonId) {
+        // Stop auto-refresh when leaving live view
+        if (activeButtonId !== 'liveViewMenuBtn') {
+            this.stopRefresh();
+        }
+
         // Remove active class from all menu buttons
         const menuButtons = document.querySelectorAll('.menu-button');
         menuButtons.forEach(btn => btn.classList.remove('active'));
@@ -678,7 +701,10 @@ export class PlayersComponent {
         if (!matchContainer) return;
 
         try {
-            matchContainer.innerHTML = '<div class="loading-message">Loading match data...</div>';
+            // Only show loading on first render
+            if (!matchContainer.querySelector('.match-data-grid')) {
+                matchContainer.innerHTML = '<div class="loading-message">Loading match data...</div>';
+            }
 
             // Fetch session data (scores, time, map info)
             const sessionResult = await ApiService.executeCommand({
@@ -727,64 +753,71 @@ export class PlayersComponent {
                 sessionData = JSON.parse(sessionData);
             }
 
-            // Extract data with fallbacks
-            currentMap = configData?.current_map || configData?.map || sessionData?.current_map || 'Unknown Map';
-            timeRemaining = sessionData?.time_remaining || sessionData?.remaining_time || 'Unknown';
-            alliedScore = sessionData?.allied_score || sessionData?.allies_score || sessionData?.team1_score || 0;
-            axisScore = sessionData?.axis_score || sessionData?.germans_score || sessionData?.team2_score || 0;
-            maxPlayers = configData?.max_players || configData?.slots || 100;
-            currentPlayers = sessionData?.current_players || sessionData?.players_count || sessionData?.nb_players || 0;
+            // Extract data from HLL RCON response
+            currentMap = sessionData?.mapName || sessionData?.mapId || 'Unknown Map';
+            timeRemaining = sessionData?.remainingMatchTime ?? 'Unknown';
+            if (typeof timeRemaining === 'number') {
+                this.lastRemainingTime = timeRemaining;
+            }
+            alliedScore = sessionData?.alliedScore || 0;
+            axisScore = sessionData?.axisScore || 0;
+            maxPlayers = sessionData?.maxPlayerCount || 100;
+            currentPlayers = sessionData?.playerCount || 0;
 
-            matchContainer.innerHTML = `
-                <div class="match-data-grid">
-                    <!-- Current Map Card -->
-                    <div class="match-data-card map-card">
-                        <div class="card-icon">🗺️</div>
-                        <div class="card-content">
-                            <div class="card-label">Current Map</div>
-                            <div class="card-value">${this.formatMapName(currentMap)}</div>
-                        </div>
-                    </div>
-
-                    <!-- Time Remaining Card -->
-                    <div class="match-data-card time-card">
-                        <div class="card-icon">⏰</div>
-                        <div class="card-content">
-                            <div class="card-label">Time Remaining</div>
-                            <div class="card-value">${this.formatTimeRemaining(timeRemaining)}</div>
-                        </div>
-                    </div>
-
-                    <!-- Score Card -->
-                    <div class="match-data-card score-card">
-                        <div class="card-icon">📊</div>
-                        <div class="card-content">
-                            <div class="card-label">Score</div>
-                            <div class="card-value">
-                                <span class="allied-score">${alliedScore}</span>
-                                <span class="score-separator">-</span>
-                                <span class="axis-score">${axisScore}</span>
-                            </div>
-                            <div class="score-labels">
-                                <span class="allied-label">Allies</span>
-                                <span class="axis-label">Axis</span>
+            // Update in-place if grid already exists, otherwise build it
+            const existing = matchContainer.querySelector('.match-data-grid');
+            if (existing) {
+                existing.querySelector('.map-card .card-value').textContent = this.formatMapName(currentMap);
+                existing.querySelector('.time-card .card-value').textContent = this.formatTimeRemaining(timeRemaining);
+                existing.querySelector('.allied-score').textContent = alliedScore;
+                existing.querySelector('.axis-score').textContent = axisScore;
+                existing.querySelector('.players-card-data .card-value').textContent = `${currentPlayers}/${maxPlayers}`;
+                existing.querySelector('.progress-bar').style.width = `${Math.min((currentPlayers / maxPlayers) * 100, 100)}%`;
+            } else {
+                matchContainer.innerHTML = `
+                    <div class="match-data-grid">
+                        <div class="match-data-card map-card">
+                            <div class="card-icon">🗺️</div>
+                            <div class="card-content">
+                                <div class="card-label">Current Map</div>
+                                <div class="card-value">${this.formatMapName(currentMap)}</div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Players Card -->
-                    <div class="match-data-card players-card-data">
-                        <div class="card-icon">👥</div>
-                        <div class="card-content">
-                            <div class="card-label">Players</div>
-                            <div class="card-value">${currentPlayers}/${maxPlayers}</div>
-                            <div class="players-progress">
-                                <div class="progress-bar" style="width: ${Math.min((currentPlayers / maxPlayers) * 100, 100)}%"></div>
+                        <div class="match-data-card time-card">
+                            <div class="card-icon">⏰</div>
+                            <div class="card-content">
+                                <div class="card-label">Time Remaining</div>
+                                <div class="card-value">${this.formatTimeRemaining(timeRemaining)}</div>
+                            </div>
+                        </div>
+                        <div class="match-data-card score-card">
+                            <div class="card-icon">📊</div>
+                            <div class="card-content">
+                                <div class="card-label">Score</div>
+                                <div class="card-value">
+                                    <span class="allied-score">${alliedScore}</span>
+                                    <span class="score-separator">-</span>
+                                    <span class="axis-score">${axisScore}</span>
+                                </div>
+                                <div class="score-labels">
+                                    <span class="allied-label">Allies</span>
+                                    <span class="axis-label">Axis</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="match-data-card players-card-data">
+                            <div class="card-icon">👥</div>
+                            <div class="card-content">
+                                <div class="card-label">Players</div>
+                                <div class="card-value">${currentPlayers}/${maxPlayers}</div>
+                                <div class="players-progress">
+                                    <div class="progress-bar" style="width: ${Math.min((currentPlayers / maxPlayers) * 100, 100)}%"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
+            }
         } catch (error) {
             console.error('Error rendering match data:', error);
             matchContainer.innerHTML = '<div class="error-message">Error displaying match data</div>';
@@ -828,6 +861,30 @@ export class PlayersComponent {
         }
 
         return 'Unknown';
+    }
+
+    static startRefresh() {
+        this.stopRefresh();
+        this.refreshInterval = setInterval(() => this.refreshLiveView(), 5000);
+        this.timerInterval = setInterval(() => this.tickTimer(), 1000);
+    }
+
+    static stopRefresh() {
+        if (this.refreshInterval) {
+            clearInterval(this.refreshInterval);
+            this.refreshInterval = null;
+        }
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
+    }
+
+    static tickTimer() {
+        if (this.lastRemainingTime == null || this.lastRemainingTime <= 0) return;
+        this.lastRemainingTime--;
+        const el = document.querySelector('.time-card .card-value');
+        if (el) el.textContent = this.formatTimeRemaining(this.lastRemainingTime);
     }
 
     // Enhanced refresh function for both match data and players

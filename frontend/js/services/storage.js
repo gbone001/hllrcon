@@ -103,6 +103,27 @@ export class StorageService {
         }
     }
 
+    // Recent servers management
+    static getRecentServers() {
+        return this.getJSON(APP_CONFIG.STORAGE_KEYS.RECENT_SERVERS, []);
+    }
+
+    static addRecentServer({ host, port, password }) {
+        const servers = this.getRecentServers();
+        const key = `${host}:${port}`;
+        const filtered = servers.filter(s => `${s.host}:${s.port}` !== key);
+        filtered.unshift({ host, port, password });
+        if (filtered.length > 10) filtered.length = 10;
+        return this.setJSON(APP_CONFIG.STORAGE_KEYS.RECENT_SERVERS, filtered);
+    }
+
+    static removeRecentServer(host, port) {
+        const servers = this.getRecentServers();
+        const key = `${host}:${port}`;
+        const filtered = servers.filter(s => `${s.host}:${s.port}` !== key);
+        return this.setJSON(APP_CONFIG.STORAGE_KEYS.RECENT_SERVERS, filtered);
+    }
+
     // Clear all stored data (useful for reset/debugging)
     static clear() {
         try {

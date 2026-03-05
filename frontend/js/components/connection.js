@@ -4,6 +4,7 @@
 import { AppState } from '../core/state.js';
 import { ApiService } from '../services/api.js';
 import { ResponseComponent } from './response.js';
+import { StorageService } from '../services/storage.js';
 
 export class ConnectionComponent {
     // Update UI based on connection state
@@ -23,7 +24,7 @@ export class ConnectionComponent {
                     <span class="connection-badge">
                         Connected to <span class="masked" onclick="toggleHostVisibility()" title="Click to ${AppState.hostVisible ? "hide" : "show"}">${displayHost}</span>:${data.port || ""}
                     </span>
-                    <button class="disconnect-button small" onclick="disconnect()">Disconnect</button>
+                    <button class="disconnect-button" onclick="disconnect()">Disconnect</button>
                 `;
             }
 
@@ -94,6 +95,8 @@ export class ConnectionComponent {
             if (result.success) {
                 ResponseComponent.showSuccess(result.message, result.data);
                 this.updateUI(true, { ...result.data, host, port });
+                StorageService.addRecentServer({ host, port, password });
+                this.renderRecentServers();
             } else {
                 ResponseComponent.showError(result.error);
             }
@@ -163,8 +166,103 @@ export class ConnectionComponent {
             }
         });
 
+        // Initialize recent servers UI
+        this.initRecentServers();
+
         // Check initial status
         this.checkStatus();
+    }
+
+    // Recent servers
+    static initRecentServers() {
+        const connectForm = document.getElementById('connectForm');
+        if (!connectForm) return;
+
+        const connectFormGrid = connectForm.querySelector('.connect-form');
+        if (!connectFormGrid) return;
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'form-group recent-servers-wrapper';
+        wrapper.innerHTML = `
+            <button type="button" class="recent-servers-btn" id="recentServersBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Recent
+            </button>
+            <div class="recent-servers-dropdown" id="recentServersDropdown"></div>
+        `;
+        connectFormGrid.appendChild(wrapper);
+
+        document.getElementById('recentServersBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleRecentServers();
+        });
+
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('recentServersDropdown');
+            if (dropdown && !wrapper.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        this.renderRecentServers();
+    }
+
+    static renderRecentServers() {
+        const dropdown = document.getElementById('recentServersDropdown');
+        if (!dropdown) return;
+
+        const servers = StorageService.getRecentServers();
+        if (servers.length === 0) {
+            dropdown.innerHTML = '<div class="recent-servers-empty">No recent servers</div>';
+            return;
+        }
+
+        dropdown.innerHTML = servers.map(s => `
+            <div class="recent-server-item" data-host="${s.host}" data-port="${s.port}">
+                <span>${s.host}:${s.port}</span>
+                <button type="button" class="recent-server-delete" data-host="${s.host}" data-port="${s.port}" title="Remove">&times;</button>
+            </div>
+        `).join('') + '<div class="recent-servers-notice">Only visible to you. Stored in your browser.</div>';
+
+        dropdown.querySelectorAll('.recent-server-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (e.target.closest('.recent-server-delete')) return;
+                this.loadRecentServer(item.dataset.host, parseInt(item.dataset.port));
+            });
+        });
+
+        dropdown.querySelectorAll('.recent-server-delete').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteRecentServer(btn.dataset.host, parseInt(btn.dataset.port));
+            });
+        });
+    }
+
+    static toggleRecentServers() {
+        const dropdown = document.getElementById('recentServersDropdown');
+        if (dropdown) dropdown.classList.toggle('open');
+    }
+
+    static loadRecentServer(host, port) {
+        const servers = StorageService.getRecentServers();
+        const server = servers.find(s => s.host === host && s.port === port);
+        if (!server) return;
+
+        const hostInput = document.getElementById('host');
+        const portInput = document.getElementById('port');
+        const passwordInput = document.getElementById('password');
+
+        if (hostInput) hostInput.value = server.host;
+        if (portInput) portInput.value = server.port;
+        if (passwordInput) passwordInput.value = server.password;
+
+        document.getElementById('recentServersDropdown')?.classList.remove('open');
+    }
+
+    static deleteRecentServer(host, port) {
+        StorageService.removeRecentServer(host, port);
+        this.renderRecentServers();
     }
 
     // Clear connection form

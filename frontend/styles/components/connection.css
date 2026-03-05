@@ -55,9 +55,9 @@
   flex-shrink: 0;
 }
 .connection-badge {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text-primary);
-  padding: 6px 12px;
+  padding: 10px 14px;
   border-radius: 6px;
   background: #27ae60;
   white-space: nowrap;
@@ -86,7 +86,7 @@
 
 .connect-form {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
   gap: 10px;
   align-items: center;
 }
@@ -116,6 +116,107 @@
 
 .masked:hover {
   opacity: 0.7;
+}
+
+/* Recent Servers */
+.recent-servers-wrapper {
+  position: relative;
+}
+
+.recent-servers-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s, color 0.2s;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.recent-servers-btn:hover {
+  background: var(--command-header-hover);
+  color: var(--text-primary);
+}
+
+.recent-servers-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  min-width: 180px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.recent-servers-dropdown.open {
+  display: block;
+}
+
+.recent-servers-empty {
+  padding: 12px 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.recent-server-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-primary);
+  transition: background 0.15s;
+}
+
+.recent-server-item:hover {
+  background: var(--command-header-hover);
+}
+
+.recent-server-item span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-server-delete {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 14px;
+  line-height: 1;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-left: 8px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.recent-server-delete:hover {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.recent-servers-notice {
+  padding: 6px 14px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-color);
+  text-align: center;
 }
 
 /* Mobile adjustments for connection */
@@ -166,6 +267,11 @@
   .status {
     font-size: 11px;
     padding: 6px 10px;
+  }
+
+  .recent-servers-dropdown {
+    min-width: 200px;
+    right: 0;
   }
 }
 
