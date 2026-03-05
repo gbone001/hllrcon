@@ -1,0 +1,200 @@
+/* Button styles */
+button {
+  background: var(--button-bg);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: var(--button-hover);
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+button.danger {
+  background: #e74c3c;
+}
+
+button.danger:hover {
+  background: #c0392b;
+}
+
+button.small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.rcon-spec-button,
+.theme-toggle {
+  background: transparent;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-primary);
+  height: 32px;
+  box-sizing: border-box;
+}
+
+.rcon-spec-button {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.theme-toggle {
+  padding: 6px;
+  width: 32px;
+}
+
+.rcon-spec-button:hover {
+  background: var(--command-header-hover);
+}
+
+.theme-toggle:hover {
+  background: var(--command-header-hover);
+  transform: rotate(20deg);
+}
+
+.copy-button {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-disabled);
+  padding: 6px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.copy-button:hover {
+  background: var(--command-header-hover);
+  color: var(--text-primary);
+  border-color: var(--input-border);
+}
+
+.copy-button.copied {
+  background: var(--button-bg);
+  color: white;
+  border-color: var(--button-bg);
+}
+
+.disconnect-button {
+  background: #e74c3c;
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.disconnect-button:hover {
+  background: #c0392b;
+}
+
+/* Developer Mode Button */
+.dev-mode-button {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-disabled);
+  padding: 6px 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.dev-mode-button:hover {
+  background: var(--command-header-hover);
+  color: var(--text-primary);
+  border-color: var(--input-border);
+}
+
+.dev-mode-button.active {
+  background: var(--button-bg);
+  color: white;
+  border-color: var(--button-bg);
+}
+
+.dev-mode-button.active:hover {
+  background: var(--button-hover);
+  border-color: var(--button-hover);
+}
+
+.connect-button {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.command-button {
+  width: 100%;
+  display: block;
+}
+
+.command-button-wrapper {
+  margin-top: 15px;
+}
+
+/* Mobile adjustments for buttons */
+@media (max-width: 768px) {
+  button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .connect-button {
+    padding: 10px;
+  }
+
+  .copy-button {
+    padding: 5px 8px;
+    font-size: 10px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .disconnect-button {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .rcon-spec-button {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .dev-mode-button {
+    padding: 5px 8px;
+    font-size: 10px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .command-button-wrapper {
+    margin-top: 12px;
+  }
+}

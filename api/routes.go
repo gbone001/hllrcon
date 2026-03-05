@@ -5,7 +5,9 @@ import "github.com/gin-gonic/gin"
 // SetupRoutes configures all API routes
 func (a *API) SetupRoutes(router *gin.Engine) {
 	// Serve frontend
-	router.Static("/static", "./frontend/static")
+	router.Static("/styles", "./frontend/styles")
+	router.Static("/js", "./frontend/js")
+	router.Static("/assets", "./frontend/assets")
 	router.StaticFile("/", "./frontend/index.html")
 	router.StaticFile("/index.html", "./frontend/index.html")
 

@@ -522,7 +522,7 @@ func (a *API) RemoveAdmin(c *gin.Context) {
 func (a *API) ForceTeamSwitch(c *gin.Context) {
 	var req struct {
 		PlayerID  string `json:"player_id" binding:"required"`
-		ForceMode int    `json:"force_mode" binding:"required"` // 0=on death, 1=immediately
+		ForceMode *int   `json:"force_mode" binding:"required"` // 0=on death, 1=immediately
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -530,14 +530,14 @@ func (a *API) ForceTeamSwitch(c *gin.Context) {
 	}
 
 	// Validate ForceMode is 0 or 1
-	if req.ForceMode != 0 && req.ForceMode != 1 {
+	if *req.ForceMode != 0 && *req.ForceMode != 1 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "force_mode must be 0 (on death) or 1 (immediately)"})
 		return
 	}
 
 	a.executeCommand(c, "ForceTeamSwitch", map[string]interface{}{
 		"PlayerId":  req.PlayerID,
-		"ForceMode": req.ForceMode,
+		"ForceMode": *req.ForceMode,
 	})
 }
 
@@ -561,8 +561,8 @@ func (a *API) RemovePlayerFromSquad(c *gin.Context) {
 // DisbandSquad disbands a squad
 func (a *API) DisbandSquad(c *gin.Context) {
 	var req struct {
-		TeamIndex  int    `json:"team_index" binding:"required"`
-		SquadIndex int    `json:"squad_index" binding:"required"`
+		TeamIndex  *int   `json:"team_index" binding:"required"`
+		SquadIndex *int   `json:"squad_index" binding:"required"`
 		Reason     string `json:"reason"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -571,8 +571,8 @@ func (a *API) DisbandSquad(c *gin.Context) {
 	}
 
 	a.executeCommand(c, "DisbandPlatoon", map[string]interface{}{
-		"TeamIndex":  req.TeamIndex,
-		"SquadIndex": req.SquadIndex,
+		"TeamIndex":  *req.TeamIndex,
+		"SquadIndex": *req.SquadIndex,
 		"Reason":     req.Reason,
 	})
 }
@@ -597,7 +597,7 @@ func (a *API) AddMapToRotation(c *gin.Context) {
 // RemoveMapFromRotation removes a map from rotation
 func (a *API) RemoveMapFromRotation(c *gin.Context) {
 	var req struct {
-		Index int `json:"index" binding:"required"`
+		Index *int `json:"index" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -605,7 +605,7 @@ func (a *API) RemoveMapFromRotation(c *gin.Context) {
 	}
 
 	a.executeCommand(c, "RemoveMapFromRotation", map[string]interface{}{
-		"Index": req.Index,
+		"Index": *req.Index,
 	})
 }
 
@@ -705,7 +705,7 @@ func (a *API) AddMapToSequence(c *gin.Context) {
 // RemoveMapFromSequence removes a map from the sequence
 func (a *API) RemoveMapFromSequence(c *gin.Context) {
 	var req struct {
-		Index int `json:"index" binding:"required"`
+		Index *int `json:"index" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -713,15 +713,15 @@ func (a *API) RemoveMapFromSequence(c *gin.Context) {
 	}
 
 	a.executeCommand(c, "RemoveMapFromSequence", map[string]interface{}{
-		"Index": req.Index,
+		"Index": *req.Index,
 	})
 }
 
 // MoveMapInSequence moves a map in the sequence
 func (a *API) MoveMapInSequence(c *gin.Context) {
 	var req struct {
-		CurrentIndex int `json:"current_index" binding:"required"`
-		NewIndex     int `json:"new_index" binding:"required"`
+		CurrentIndex *int `json:"current_index" binding:"required"`
+		NewIndex     *int `json:"new_index" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -729,8 +729,8 @@ func (a *API) MoveMapInSequence(c *gin.Context) {
 	}
 
 	a.executeCommand(c, "MoveMapInSequence", map[string]interface{}{
-		"CurrentIndex": req.CurrentIndex,
-		"NewIndex":     req.NewIndex,
+		"CurrentIndex": *req.CurrentIndex,
+		"NewIndex":     *req.NewIndex,
 	})
 }
 
