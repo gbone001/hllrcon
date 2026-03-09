@@ -37,6 +37,8 @@ type SecurityConfig struct {
 	EnableCORS            bool     `mapstructure:"enable_cors"`
 	AllowedOrigins        []string `mapstructure:"allowed_origins"`
 	EnableSecurityHeaders bool     `mapstructure:"enable_security_headers"`
+	AppUsername           string   `mapstructure:"app_username"`
+	AppPassword           string   `mapstructure:"app_password"`
 }
 
 type RCONConfig struct {
@@ -63,6 +65,8 @@ func Load(configPath string) (*Config, error) {
 	v.SetDefault("security.enable_cors", false)
 	v.SetDefault("security.allowed_origins", []string{"*"})
 	v.SetDefault("security.enable_security_headers", true)
+	v.SetDefault("security.app_username", "admin")
+	v.SetDefault("security.app_password", "")
 
 	// RCON defaults
 	v.SetDefault("rcon.dial_timeout_seconds", 10)

@@ -1,10 +1,47 @@
 package api
 
 import (
+	"crypto/subtle"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+// PasswordAccessControl protects routes with HTTP Basic auth when enabled.
+func PasswordAccessControl(username, password string, skipPaths []string) gin.HandlerFunc {
+	if strings.TrimSpace(username) == "" {
+		username = "admin"
+	}
+
+	skip := make(map[string]struct{}, len(skipPaths))
+	for _, path := range skipPaths {
+		skip[path] = struct{}{}
+	}
+
+	return func(c *gin.Context) {
+		if _, ok := skip[c.Request.URL.Path]; ok {
+			c.Next()
+			return
+		}
+
+		providedUsername, providedPassword, ok := c.Request.BasicAuth()
+		if !ok || !secureStringCompare(providedUsername, username) || !secureStringCompare(providedPassword, password) {
+			c.Header("WWW-Authenticate", `Basic realm="hllrcon", charset="UTF-8"`)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "authentication required"})
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func secureStringCompare(a, b string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
+}
 
 // SecurityHeaders adds security headers to responses
 func SecurityHeaders() gin.HandlerFunc {

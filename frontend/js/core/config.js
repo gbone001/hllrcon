@@ -1442,6 +1442,8 @@ export const APP_CONFIG = {
     STORAGE_KEYS: {
         THEME: 'theme',
         DEVELOPER_MODE: 'developerMode',
-        RECENT_SERVERS: 'recentServers'
+        RECENT_SERVERS: 'recentServers',
+        RECENT_SERVERS_ENCRYPTED: 'recentServersEncrypted',
+        CREDENTIAL_VAULT_SALT: 'credentialVaultSalt'
     }
 };

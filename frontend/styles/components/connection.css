@@ -123,6 +123,12 @@
   position: relative;
 }
 
+.recent-servers-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .recent-servers-btn {
   background: transparent;
   border: 1px solid var(--border-color);
@@ -137,6 +143,33 @@
   transition: background 0.2s, color 0.2s;
   box-sizing: border-box;
   height: 100%;
+}
+
+.vault-lock-btn {
+  padding: 10px 12px;
+}
+
+.vault-unlock-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.vault-passphrase-input {
+  flex: 1;
+  min-width: 120px;
+  height: 36px;
+  padding: 8px 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text-primary);
+}
+
+.vault-unlock-btn {
+  height: 36px;
+  padding: 6px 12px;
 }
 
 .recent-servers-btn:hover {
@@ -272,6 +305,10 @@
   .recent-servers-dropdown {
     min-width: 200px;
     right: 0;
+  }
+
+  .recent-servers-actions {
+    width: 100%;
   }
 }
 

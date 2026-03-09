@@ -18,6 +18,8 @@ secure_cookie = false    # Set to true if running behind HTTPS (recommended for 
 enable_cors = false                # Enable CORS (set to true if needed)
 allowed_origins = ["http://localhost:8080", "http://127.0.0.1:8080", "https://hllrcon.com"]
 enable_security_headers = true     # Enable security headers (recommended)
+app_username = "admin"             # Username for browser password prompt (Basic Auth)
+app_password = ""                  # Set a strong password to protect the entire app
 
 [rcon]
 # RCON Protocol Settings

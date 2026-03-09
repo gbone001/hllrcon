@@ -51,6 +51,7 @@ func main() {
 		"session_timeout", cfg.Session.TimeoutMinutes,
 		"secure_cookie", cfg.Session.SecureCookie,
 		"cors_enabled", cfg.Security.EnableCORS,
+		"app_access_control_enabled", cfg.Security.AppPassword != "",
 	)
 
 	// Setup Gin
@@ -70,6 +71,12 @@ func main() {
 	if cfg.Security.EnableCORS {
 		slog.Info("CORS enabled", "allowed_origins", cfg.Security.AllowedOrigins)
 		router.Use(api.CORS(cfg.Security.AllowedOrigins))
+	}
+
+	// Apply app-level password access control if configured
+	if cfg.Security.AppPassword != "" {
+		slog.Info("App password access control enabled", "username", cfg.Security.AppUsername)
+		router.Use(api.PasswordAccessControl(cfg.Security.AppUsername, cfg.Security.AppPassword, []string{"/health"}))
 	}
 
 	// Initialize session manager and API

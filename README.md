@@ -78,6 +78,10 @@ port = "8080"     # HTTP port
 [log]
 level = "info"    # debug, info, warn, error
 format = "text"   # text or json
+
+[security]
+app_username = "admin"   # Login username
+app_password = ""        # Set this to enable app-level password protection
 ```
 
 You can also use environment variables:
@@ -86,6 +90,10 @@ You can also use environment variables:
 - `HLL_SERVER_PORT` - HTTP port
 - `HLL_LOG_LEVEL` - Log level
 - `HLL_LOG_FORMAT` - Log format
+- `HLL_SECURITY_APP_USERNAME` - App login username (default: `admin`)
+- `HLL_SECURITY_APP_PASSWORD` - App login password (empty disables protection)
+
+When `HLL_SECURITY_APP_PASSWORD` (or `security.app_password`) is set, the entire web app and API are protected with HTTP Basic Authentication.
 
 ## Architecture
 
@@ -107,6 +115,15 @@ You can also use environment variables:
 4. **Privacy**: No credentials or commands are logged or persisted
 
 Sessions are stored in memory only and automatically cleaned up.
+
+### Encrypted Saved Logins
+
+Saved recent server credentials are encrypted in your browser using AES-GCM.
+
+- The encryption key is derived from your vault passphrase using PBKDF2-SHA256.
+- The passphrase is never sent to the server and is never stored.
+- Credentials remain encrypted at rest in localStorage.
+- Existing plaintext saved servers are migrated to encrypted storage after your first vault unlock.
 
 ## License
 

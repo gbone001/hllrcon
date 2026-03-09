@@ -95,8 +95,15 @@ export class ConnectionComponent {
             if (result.success) {
                 ResponseComponent.showSuccess(result.message, result.data);
                 this.updateUI(true, { ...result.data, host, port });
-                StorageService.addRecentServer({ host, port, password });
-                this.renderRecentServers();
+
+                if (StorageService.isCredentialVaultUnlocked()) {
+                    const saveResult = await StorageService.addRecentServer({ host, port, password });
+                    if (!saveResult.success) {
+                        ResponseComponent.showError(saveResult.error || 'Failed to save encrypted credentials');
+                    }
+                }
+
+                await this.renderRecentServers();
             } else {
                 ResponseComponent.showError(result.error);
             }
@@ -184,17 +191,25 @@ export class ConnectionComponent {
         const wrapper = document.createElement('div');
         wrapper.className = 'form-group recent-servers-wrapper';
         wrapper.innerHTML = `
-            <button type="button" class="recent-servers-btn" id="recentServersBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                Recent
-            </button>
+            <div class="recent-servers-actions">
+                <button type="button" class="recent-servers-btn" id="recentServersBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Recent (Locked)
+                </button>
+                <button type="button" class="recent-servers-btn vault-lock-btn" id="vaultLockBtn" style="display:none;">Lock</button>
+            </div>
             <div class="recent-servers-dropdown" id="recentServersDropdown"></div>
         `;
         connectFormGrid.appendChild(wrapper);
 
-        document.getElementById('recentServersBtn').addEventListener('click', (e) => {
+        document.getElementById('recentServersBtn').addEventListener('click', async (e) => {
             e.stopPropagation();
-            this.toggleRecentServers();
+            await this.toggleRecentServers();
+        });
+
+        document.getElementById('vaultLockBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.lockCredentialVault();
         });
 
         document.addEventListener('click', (e) => {
@@ -204,16 +219,54 @@ export class ConnectionComponent {
             }
         });
 
-        this.renderRecentServers();
+        this.renderRecentServers().catch((error) => {
+            console.error('Failed to render recent servers:', error);
+        });
     }
 
-    static renderRecentServers() {
+    static async renderRecentServers() {
         const dropdown = document.getElementById('recentServersDropdown');
         if (!dropdown) return;
 
-        const servers = StorageService.getRecentServers();
+        if (!StorageService.isCredentialVaultUnlocked()) {
+            this.updateVaultControlState();
+            dropdown.innerHTML = `
+                <div class="recent-servers-empty">Credential vault is locked</div>
+                <div class="vault-unlock-row">
+                    <input type="password" id="vaultPassphraseInput" class="vault-passphrase-input" placeholder="Vault passphrase (min 8 chars)" autocomplete="off" />
+                    <button type="button" class="recent-servers-btn vault-unlock-btn" id="vaultUnlockBtn">Unlock</button>
+                </div>
+                <div class="recent-servers-notice">Credentials are encrypted locally with AES-GCM. Passphrase is never stored.</div>
+            `;
+
+            const unlockBtn = document.getElementById('vaultUnlockBtn');
+            const passphraseInput = document.getElementById('vaultPassphraseInput');
+
+            unlockBtn?.addEventListener('click', async () => {
+                await this.unlockCredentialVault();
+            });
+            passphraseInput?.addEventListener('keydown', async (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    await this.unlockCredentialVault();
+                }
+            });
+            return;
+        }
+
+        let servers = [];
+        try {
+            servers = await StorageService.getRecentServers();
+        } catch (error) {
+            StorageService.lockCredentialVault();
+            this.updateVaultControlState();
+            dropdown.innerHTML = '<div class="recent-servers-empty">Failed to decrypt vault. Re-enter passphrase.</div>';
+            return;
+        }
+        this.updateVaultControlState();
+
         if (servers.length === 0) {
-            dropdown.innerHTML = '<div class="recent-servers-empty">No recent servers</div>';
+            dropdown.innerHTML = '<div class="recent-servers-empty">No recent servers in encrypted vault</div>';
             return;
         }
 
@@ -222,30 +275,36 @@ export class ConnectionComponent {
                 <span>${s.host}:${s.port}</span>
                 <button type="button" class="recent-server-delete" data-host="${s.host}" data-port="${s.port}" title="Remove">&times;</button>
             </div>
-        `).join('') + '<div class="recent-servers-notice">Only visible to you. Stored in your browser.</div>';
+        `).join('') + '<div class="recent-servers-notice">Encrypted locally and only visible to you in this browser.</div>';
 
         dropdown.querySelectorAll('.recent-server-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+            item.addEventListener('click', async (e) => {
                 if (e.target.closest('.recent-server-delete')) return;
-                this.loadRecentServer(item.dataset.host, parseInt(item.dataset.port));
+                await this.loadRecentServer(item.dataset.host, parseInt(item.dataset.port, 10));
             });
         });
 
         dropdown.querySelectorAll('.recent-server-delete').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                this.deleteRecentServer(btn.dataset.host, parseInt(btn.dataset.port));
+                await this.deleteRecentServer(btn.dataset.host, parseInt(btn.dataset.port, 10));
             });
         });
     }
 
-    static toggleRecentServers() {
+    static async toggleRecentServers() {
         const dropdown = document.getElementById('recentServersDropdown');
-        if (dropdown) dropdown.classList.toggle('open');
+        if (!dropdown) return;
+
+        if (!dropdown.classList.contains('open')) {
+            await this.renderRecentServers();
+        }
+
+        dropdown.classList.toggle('open');
     }
 
-    static loadRecentServer(host, port) {
-        const servers = StorageService.getRecentServers();
+    static async loadRecentServer(host, port) {
+        const servers = await StorageService.getRecentServers();
         const server = servers.find(s => s.host === host && s.port === port);
         if (!server) return;
 
@@ -260,9 +319,63 @@ export class ConnectionComponent {
         document.getElementById('recentServersDropdown')?.classList.remove('open');
     }
 
-    static deleteRecentServer(host, port) {
-        StorageService.removeRecentServer(host, port);
-        this.renderRecentServers();
+    static async deleteRecentServer(host, port) {
+        const result = await StorageService.removeRecentServer(host, port);
+        if (!result.success) {
+            ResponseComponent.showError(result.error || 'Failed to remove server');
+            return;
+        }
+
+        await this.renderRecentServers();
+    }
+
+    static updateVaultControlState() {
+        const recentBtn = document.getElementById('recentServersBtn');
+        const lockBtn = document.getElementById('vaultLockBtn');
+        const unlocked = StorageService.isCredentialVaultUnlocked();
+
+        if (recentBtn) {
+            recentBtn.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Recent (${unlocked ? 'Unlocked' : 'Locked'})
+            `;
+        }
+
+        if (lockBtn) {
+            lockBtn.style.display = unlocked ? 'inline-flex' : 'none';
+        }
+    }
+
+    static async unlockCredentialVault() {
+        const input = document.getElementById('vaultPassphraseInput');
+        const passphrase = input?.value || '';
+
+        const result = await StorageService.unlockCredentialVault(passphrase);
+        if (!result.success) {
+            ResponseComponent.showError(result.error || 'Failed to unlock credential vault');
+            return;
+        }
+
+        if (input) {
+            input.value = '';
+        }
+
+        if (result.migrated) {
+            ResponseComponent.showSuccess('Encrypted vault unlocked and legacy credentials migrated.');
+        } else {
+            ResponseComponent.showSuccess('Encrypted credential vault unlocked.');
+        }
+
+        await this.renderRecentServers();
+    }
+
+    static lockCredentialVault() {
+        StorageService.lockCredentialVault();
+        this.updateVaultControlState();
+        this.renderRecentServers().catch((error) => {
+            console.error('Failed to render recent servers:', error);
+        });
+        ResponseComponent.showSuccess('Encrypted credential vault locked.');
     }
 
     // Clear connection form
