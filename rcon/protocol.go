@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	HeaderSize = 8
-	Version    = 2
+	HeaderSize  = 12
+	HeaderMagic = 0xDE450508
+	Version     = 2
 )
 
 var requestIDCounter uint32
@@ -65,10 +66,11 @@ func PackRequest(authToken, command string, contentBody any) ([]byte, uint32, er
 		return nil, 0, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	// Create header: [requestID (4 bytes)][contentLength (4 bytes)]
+	// Create header: [magic (4 bytes)][requestID (4 bytes)][contentLength (4 bytes)]
 	header := make([]byte, HeaderSize)
-	binary.LittleEndian.PutUint32(header[0:4], requestID)
-	binary.LittleEndian.PutUint32(header[4:8], uint32(len(jsonBody)))
+	binary.LittleEndian.PutUint32(header[0:4], HeaderMagic)
+	binary.LittleEndian.PutUint32(header[4:8], requestID)
+	binary.LittleEndian.PutUint32(header[8:12], uint32(len(jsonBody)))
 
 	return append(header, jsonBody...), requestID, nil
 }
@@ -79,8 +81,13 @@ func UnpackResponse(data []byte) (*Response, uint32, error) {
 		return nil, 0, fmt.Errorf("response too short: %d bytes", len(data))
 	}
 
-	requestID := binary.LittleEndian.Uint32(data[0:4])
-	contentLength := binary.LittleEndian.Uint32(data[4:8])
+	magic := binary.LittleEndian.Uint32(data[0:4])
+	if magic != HeaderMagic {
+		return nil, 0, fmt.Errorf("invalid header magic: expected 0x%08X, got 0x%08X", HeaderMagic, magic)
+	}
+
+	requestID := binary.LittleEndian.Uint32(data[4:8])
+	contentLength := binary.LittleEndian.Uint32(data[8:12])
 
 	if len(data) < HeaderSize+int(contentLength) {
 		return nil, 0, fmt.Errorf("incomplete response body")
