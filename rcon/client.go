@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"strconv"
@@ -159,12 +160,16 @@ func (c *Client) exchangeUnlocked(command string, contentBody any) (*Response, e
 
 	// Receive response header
 	header := make([]byte, HeaderSize)
-	if _, err := c.conn.Read(header); err != nil {
+	if _, err := io.ReadFull(c.conn, header); err != nil {
 		return nil, fmt.Errorf("failed to read response header: %w", err)
 	}
 
-	respID := binary.LittleEndian.Uint32(header[0:4])
-	contentLength := binary.LittleEndian.Uint32(header[4:8])
+	magic := binary.LittleEndian.Uint32(header[0:4])
+	if magic != HeaderMagic {
+		return nil, fmt.Errorf("invalid header magic: expected 0x%08X, got 0x%08X", HeaderMagic, magic)
+	}
+	respID := binary.LittleEndian.Uint32(header[4:8])
+	contentLength := binary.LittleEndian.Uint32(header[8:12])
 
 	// Validate response size
 	if int(contentLength) > c.maxResponseSize {
@@ -173,13 +178,8 @@ func (c *Client) exchangeUnlocked(command string, contentBody any) (*Response, e
 
 	// Receive response body
 	body := make([]byte, contentLength)
-	totalRead := 0
-	for totalRead < int(contentLength) {
-		n, err := c.conn.Read(body[totalRead:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to read response body: %w", err)
-		}
-		totalRead += n
+	if _, err := io.ReadFull(c.conn, body); err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	// XOR decrypt the body
