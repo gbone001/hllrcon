@@ -32,3 +32,9 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Discord bot
+discord-bot/node_modules/
+discord-bot/dist/
+discord-bot/.env
+discord-bot/data/
